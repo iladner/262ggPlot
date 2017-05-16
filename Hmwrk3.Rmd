@@ -1,0 +1,63 @@
+---
+title: "Let's make some fun graphs!"
+author: "Ian Ladner"
+date: "May 19, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r input, echo=FALSE, message=FALSE}
+#read in data
+thinshallow = read.table("data/resthin.shallow.txt", header=T)
+thindeep = read.table("data/resthin.deep.txt", header=T)
+clim=read.table("data/sierraclim.txt",header=T)
+
+#make sure you have libraries
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gridExtra)
+library(lubridate)
+
+```
+
+#Starting Simple
+```{r transp_denstiy, eval = TRUE, echo = FALSE}
+Plot1a <- ggplot(thinshallow, aes(x=trans))+ geom_density(fill = "bisque4") + labs(x = "Transpiration", y ="Freq. of Measurement")
+
+
+Plot1b <- ggplot(thinshallow, aes(y=trans,x= as.factor(month)))+stat_summary(fun.y="mean", geom="bar", fill = "bisque4") + labs(x = "Month", y = "Mean Transpiration")+theme(axis.text= element_text(face="bold", size=10))
+
+grid.arrange(Plot1b,Plot1a, ncol = 2)
+```
+
+
+#fill between
+```{r geom_ribbon, eval = TRUE, echo = FALSE}
+birthmonth <- subset(clim, clim$year == 1994 & clim$month == 5) 
+Plot2 <- ggplot(birthmonth, aes(day))+geom_ribbon(aes(ymin = tmin, ymax = tmax), fill = "indianred1") + labs(x = "Day", y = expression(paste("Temperature Range ",C**degree))) + theme_minimal() + ggtitle("Temperature during my birth month", subtitle = "May 1994") + theme(plot.subtitle = element_text(hjust = 0.1))
+Plot2
+```
+
+#ET mean (bar) and max (pt) graph
+```{r ET, eval = TRUE, echo = FALSE}
+thindeep$et <- thindeep$evap + thindeep$trans
+thinshallow$et <- thinshallow$evap + thinshallow$trans
+Plot3 <- ggplot(thindeep, aes(y = et, x = as.factor(month)))+stat_summary(fun.y = "mean", geom = "bar", fill = "cornflowerblue", show.legend = TRUE) + stat_summary(fun.y = "max", geom = "point", color = "darkblue", show.legend = TRUE) + theme_classic() + labs(x = "Month", y = "Evapotranspiration") + ggtitle("Evapotranspiration from ThinDeep Site") + theme(plot.title = element_text(size = 16, hjust = 0.5))+annotate("text", x=9, y=5, label="Max", colour="darkblue", size=4, hjust=0.5)+annotate("text", x=8.25, y=2.75, label="Mean", colour="cornflowerblue", size=4, hjust=0.5)  
+Plot3
+```
+#combine thin and shallow with variable and do something
+```{r combiningData}
+thindeep$site = "Deep"
+thinshallow$site = "Shallow"
+
+thinAll <- rbind(thindeep,thinshallow)
+
+Plot4 <- ggplot(thinAll, aes(x = month, y = evap, col = as.factor(site)))+stat_summary(fun.y = "mean", geom = "line", size = 3, aes(col = as.factor(site)))+facet_wrap(~as.factor(scen)) + scale_color_brewer(type="qual", palette="Set2", name="Site") +theme_bw()+labs(x = "Month", y = "Evaporation")+ scale_x_continuous(limits = c(0,13), breaks = c(0,3,6,9,12))
+Plot4
+
+```
