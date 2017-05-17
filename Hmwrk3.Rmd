@@ -25,7 +25,10 @@ library(lubridate)
 
 ```
 
-#Starting Simple
+#Techniques utilized:
+
+###Simple ggplot, grid.arrange, and graph tidying
+
 ```{r transp_denstiy, eval = TRUE, echo = FALSE}
 Plot1a <- ggplot(thinshallow, aes(x=trans))+ geom_density(fill = "bisque4") + labs(x = "Transpiration", y ="Freq. of Measurement")
 
@@ -36,22 +39,26 @@ grid.arrange(Plot1b,Plot1a, ncol = 2)
 ```
 
 
-#fill between
+###Subsetting, geom_ribbon, and theme elements
+
 ```{r geom_ribbon, eval = TRUE, echo = FALSE}
 birthmonth <- subset(clim, clim$year == 1994 & clim$month == 5) 
 Plot2 <- ggplot(birthmonth, aes(day))+geom_ribbon(aes(ymin = tmin, ymax = tmax), fill = "indianred1") + labs(x = "Day", y = expression(paste("Temperature Range ",C**degree))) + theme_minimal() + ggtitle("Temperature during my birth month", subtitle = "May 1994") + theme(plot.subtitle = element_text(hjust = 0.1))
 Plot2
 ```
 
-#ET mean (bar) and max (pt) graph
+###New variable creation, stat_summary, and annotation
+
 ```{r ET, eval = TRUE, echo = FALSE}
 thindeep$et <- thindeep$evap + thindeep$trans
 thinshallow$et <- thinshallow$evap + thinshallow$trans
 Plot3 <- ggplot(thindeep, aes(y = et, x = as.factor(month)))+stat_summary(fun.y = "mean", geom = "bar", fill = "cornflowerblue", show.legend = TRUE) + stat_summary(fun.y = "max", geom = "point", color = "darkblue", show.legend = TRUE) + theme_classic() + labs(x = "Month", y = "Evapotranspiration") + ggtitle("Evapotranspiration from ThinDeep Site") + theme(plot.title = element_text(size = 16, hjust = 0.5))+annotate("text", x=9, y=5, label="Max", colour="darkblue", size=4, hjust=0.5)+annotate("text", x=8.25, y=2.75, label="Mean", colour="cornflowerblue", size=4, hjust=0.5)  
 Plot3
 ```
-#combine thin and shallow with variable and do something
-```{r combiningData}
+
+###Combining data sets, using color brewer, and facets
+
+```{r combiningData, echo = FALSE}
 thindeep$site = "Deep"
 thinshallow$site = "Shallow"
 
